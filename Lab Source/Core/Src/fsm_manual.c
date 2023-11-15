@@ -5,179 +5,104 @@
  *      Author: PC
  */
 
-#include "fsm_manual.h"
+#include "global.h"
 
 void fsm_manual_run(){
-	switch(status){
-	case MODE2:
-			set_blinky(INIT);
-
-			index_led = 0;
-			updateBufferMode2();
-			update7SEG(index_led);
-
-			setTimer(2, 500);
-			setTimer(3, 500);
-			clearTimer(0);
-			clearTimer(1);
-
-			status = AUTO_RED;
-
-			break;
-
-		case AUTO_RED:
-			if (timer_flag[3] == 1) {
-				setTimer(3, 500);
-				set_blinky(AUTO_RED);
+	switch(led_status){
+	case MANUAL_RED:
+		if(timer1_flag==1){
+			change_state(MANUAL_RED);
+			setTimer1(25);
+		}
+		if (timer2_flag == 1) {
+			updateBuffer2(counter_red+temp+RED,MANUAL_RED);
+			setTimer2(5);
+		}
+		if (timer3_flag == 1) {
+			index_led=update_index(index_led);
+			setTimer3(20);
+		}
+		if(isButton1Pressed()==1){
+			led_status=MANUAL_YELLOW;
+			temp=0;
+			setTimer1(25);
+		}
+		if(isButton2Pressed()==1){
+			if(counter_red+temp+RED<99){
+				temp++;
 			}
-			if (timer_flag[2] == 1) {
-				setTimer(2, 500);
-				updateBufferMode2();
-				update7SEG(index_led);
+		}
+		if(isButton3Pressed()==1){
+			counter_red+=temp;
+			temp=0;
+			counter_green=RED+counter_red-GREEN-YELLOW-counter_yellow;
+		}
+		break;
+	case MANUAL_YELLOW:
+		if(timer1_flag==1){
+			change_state(MANUAL_YELLOW);
+			setTimer1(25);
+		}
+		if (timer2_flag == 1) {
+			updateBuffer2(counter_yellow+temp+YELLOW,MANUAL_YELLOW);
+			setTimer2(5);
+		}
+		if (timer3_flag == 1) {
+			index_led=update_index(index_led);
+			setTimer3(20);
+		}
+		if(isButton1Pressed()==1){
+			led_status=MANUAL_GREEN;
+			temp=0;
+			setTimer1(25);
+		}
+		if(isButton2Pressed()==1){
+			if(counter_yellow+temp+YELLOW<99){
+				temp++;
 			}
-			if (check_button_pressed(0) == 1) {
-				status = MODE3;
+		}
+		if(isButton3Pressed()==1){
+			counter_yellow+=temp;
+			counter_red=YELLOW+GREEN+counter_yellow+counter_green-RED;
+			temp=0;
+		}
+		break;
+	case MANUAL_GREEN:
+		if(timer1_flag==1){
+			change_state(MANUAL_GREEN);
+			setTimer1(25);
+		}
+		if (timer2_flag == 1) {
+			updateBuffer2(counter_green+temp+GREEN,MANUAL_GREEN);
+			setTimer2(5);
+		}
+		if (timer3_flag == 1) {
+			index_led=update_index(index_led);
+			setTimer3(20);
+		}
+		if(isButton1Pressed()==1){
+			temp=0;
+			led_status_1=INIT;
+			ontime=0;
+			change_state(CLEAR);
+			led_status = AUTO_RED_GREEN;
+			setTimer1((GREEN+counter_green)*100);
+			updateBuffer1(led_status_1);
+			setTimer2(100);
+			setTimer3(20);
+		}
+		if(isButton2Pressed()==1){
+			if(counter_green+temp+GREEN<99){
+				temp++;
 			}
-			if (check_button_pressed(1) == 1) {
-				status = ADJ_RED;
-				if (RED >= 99) RED = AMBER + 1;
-				else RED++;
-			}
-			break;
-
-		case ADJ_RED:
-			if (timer_flag[3] == 1) {
-				setTimer(3, 500);
-				set_blinky(AUTO_RED);
-			}
-			if (timer_flag[2] == 1) {
-				setTimer(2, 500);
-				updateBufferMode2();
-				update7SEG(index_led);
-			}
-			if (check_button_pressed(1) == 1) {
-				if (RED >= 99) RED = AMBER + 1;
-				else RED++;
-			}
-			if (check_button_pressed(2) == 1) {
-				status = AUTO_RED;
-				GREEN = RED - AMBER;
-			}
-			break;
-
-		case MODE3:
-			set_blinky(AUTO_AMBER);
-
-			index_led = 0;
-			updateBufferMode2();
-			update7SEG(index_led);
-
-			setTimer(2, 500);
-			setTimer(3, 500);
-			clearTimer(0);
-			clearTimer(1);
-
-			status = AUTO_AMBER;
-			break;
-
-		case AUTO_AMBER:
-			if (timer_flag[3] == 1) {
-				setTimer(3, 500);
-				set_blinky(AUTO_AMBER);
-			}
-			if (timer_flag[2] == 1) {
-				setTimer(2, 500);
-				updateBufferMode3();
-				update7SEG(index_led);
-			}
-			if (check_button_pressed(0) == 1) {
-				status = MODE4;
-			}
-			if (check_button_pressed(1) == 1) {
-				status = ADJ_AMBER;
-				if (AMBER >= 5) AMBER = 1;
-				else AMBER++;
-			}
-			break;
-
-		case ADJ_AMBER:
-			if (timer_flag[3] == 1) {
-				setTimer(3, 500);
-				set_blinky(AUTO_AMBER);
-			}
-			if (timer_flag[2] == 1) {
-				setTimer(2, 500);
-				updateBufferMode3();
-				update7SEG(index_led);
-			}
-			if (check_button_pressed(1) == 1) {
-				if (AMBER >= 5) AMBER = 1;
-				else AMBER++;
-			}
-			if (check_button_pressed(2) == 1) {
-				status = AUTO_AMBER;
-				if (RED <= AMBER) RED = AMBER + 1;
-				GREEN = RED - AMBER;
-			}
-			break;
-
-		case MODE4:
-			set_blinky(AUTO_GREEN);
-
-			index_led = 0;
-			updateBufferMode2();
-			update7SEG(index_led);
-
-			setTimer(2, 500);
-			setTimer(3, 500);
-			clearTimer(0);
-			clearTimer(1);
-
-			status = AUTO_GREEN;
-
-			break;
-
-		case AUTO_GREEN:
-			if (timer_flag[3] == 1) {
-				setTimer(3, 500);
-				set_blinky(AUTO_GREEN);
-			}
-			if (timer_flag[2] == 1) {
-				setTimer(2, 500);
-				updateBufferMode4();
-				update7SEG(index_led);
-			}
-			if (check_button_pressed(0) == 1) {
-				status = MODE1;
-			}
-			if (check_button_pressed(1) == 1) {
-				status = ADJ_GREEN;
-				if (GREEN >= RED - AMBER) GREEN = 1;
-				else GREEN++;
-			}
-			break;
-
-		case ADJ_GREEN:
-			if (timer_flag[3] == 1) {
-				setTimer(3, 500);
-				set_blinky(AUTO_GREEN);
-			}
-			if (timer_flag[2] == 1) {
-				setTimer(2, 500);
-				updateBufferMode4();
-				update7SEG(index_led);
-			}
-			if (check_button_pressed(1) == 1) {
-				if (GREEN >= RED - AMBER) GREEN = 1;
-				else GREEN++;
-			}
-			if (check_button_pressed(2) == 1) {
-				status = AUTO_GREEN;
-				RED = GREEN + AMBER;
-			}
-			break;
-
-		default:
-			break;
+		}
+		if(isButton3Pressed()==1){
+			counter_green+=temp;
+			counter_red=YELLOW+GREEN+counter_yellow+counter_green-RED;
+			temp=0;
+		}
+		break;
+	default:
+		break;
 	}
 }

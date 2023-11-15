@@ -5,112 +5,103 @@
  *      Author: PC
  */
 
-#include "fsm_automatic.h"
+#include "global.h"
 
 void fsm_automatic_run() {
-	switch(status){
-
+	switch(led_status){
 	case INIT:
-		status = MODE1;
+		led_status = AUTO_RED_GREEN;
+		setTimer1((GREEN+counter_green)*100);
+		updateBuffer1(led_status_1);
+		setTimer2(100);
+		setTimer3(20);
 		break;
 
-	case MODE1:
-		status = AUTO_RED1_GREEN2;
+	case AUTO_RED_GREEN:
 
-		traffic_light(INIT);
-
-		counter1 = 1;
-		counter2 = 1;
-		index_led = 0;
-
-		updateBufferMode1();
-		update7SEG(index_led);
-
-		setTimer(0, GREEN * 1000);	// Timer AUTO_RED1_GREEN2
-		setTimer(1, 1000);			// Timer updateBufferMode1
-		setTimer(2, 500);			// Timer LED 7-SEG
-		clearTimer(3);				// Timer blinking LED
-
-		break;
-
-	case AUTO_RED1_GREEN2:
-		traffic_light(AUTO_RED1_GREEN2);
-
-		if (timer_flag[0] == 1) {
-			status = AUTO_RED1_AMBER2;
-			setTimer(0, AMBER * 1000);
+		if (timer1_flag == 1) {
+			led_status = AUTO_RED_YELLOW;
+			setTimer1((YELLOW+counter_yellow)*100);
 		}
-		if (timer_flag[1] == 1) {
-			updateBufferMode1();
-			setTimer(1, 1000);
+		if (timer2_flag == 1) {
+			updateBuffer1(led_status_1);
+			setTimer2(100);
 		}
-		if (timer_flag[2] == 1) {
-			update7SEG(index_led);
-			setTimer(2, 500);
+		if (timer3_flag == 1) {
+			index_led=update_index(index_led);
+			setTimer3(20);
 		}
-		if (check_button_pressed(0) == 1) {
-			status = MODE2;
+		if (isButton1Pressed()== 1) {
+			change_state(CLEAR);
+			led_status = MANUAL_RED;
+			change_state(MANUAL_RED);
+			setTimer1(25);
 		}
 		break;
 
-	case AUTO_RED1_AMBER2:
-		traffic_light(AUTO_RED1_AMBER2);
+	case AUTO_RED_YELLOW:
+		if (isButton1Pressed()== 1) {
+			change_state(CLEAR);
+			led_status = MANUAL_RED;
+			change_state(MANUAL_RED);
+			setTimer1(25);
+		}
+		if (timer1_flag == 1) {
+			led_status = AUTO_GREEN_RED;
+			setTimer1((GREEN+counter_green)*100);
+		}
+		if (timer2_flag == 1) {
+			updateBuffer1(led_status_1);
+			setTimer2(100);
+		}
+		if (timer3_flag == 1) {
+			index_led=update_index(index_led);
+			setTimer3(20);
+		}
 
-		if (timer_flag[0] == 1) {
-			status = AUTO_GREEN1_RED2;
-			setTimer(0, GREEN * 1000);
+		break;
+
+	case AUTO_GREEN_RED:
+		if (isButton1Pressed()== 1) {
+			change_state(CLEAR);
+			led_status = MANUAL_RED;
+			change_state(MANUAL_RED);
+			setTimer1(25);
 		}
-		if (timer_flag[1] == 1) {
-			updateBufferMode1();
-			setTimer(1, 1000);
+		if (timer1_flag == 1) {
+			led_status = AUTO_YELLOW_RED;
+			setTimer1((YELLOW+counter_yellow)*100);
 		}
-		if (timer_flag[2] == 1) {
-			update7SEG(index_led);
-			setTimer(2, 500);
+		if (timer2_flag == 1) {
+			updateBuffer1(led_status_1);
+			setTimer2(100);
 		}
-		if (check_button_pressed(0) == 1) {
-			status = MODE2;
+		if (timer3_flag == 1) {
+			index_led=update_index(index_led);
+			setTimer3(20);
 		}
 		break;
 
-	case AUTO_GREEN1_RED2:
-		traffic_light(AUTO_GREEN1_RED2);
+	case AUTO_YELLOW_RED:
+		if (isButton1Pressed()== 1) {
+			change_state(CLEAR);
+			led_status = MANUAL_RED;
+			change_state(MANUAL_RED);
+			setTimer1(25);
+		}
+		if (timer1_flag == 1) {
+			led_status = AUTO_RED_GREEN;
+			setTimer1((GREEN+counter_green)*100);
+		}
+		if (timer2_flag == 1) {
+			updateBuffer1(led_status_1);
+			setTimer2(100);
+		}
+		if (timer3_flag == 1) {
+			index_led=update_index(index_led);
+			setTimer3(20);
+		}
 
-		if (timer_flag[0] == 1) {
-			status = AUTO_AMBER1_RED2;
-			setTimer(0, AMBER * 1000);
-		}
-		if (timer_flag[1] == 1) {
-			updateBufferMode1();
-			setTimer(1, 1000);
-		}
-		if (timer_flag[2] == 1) {
-			update7SEG(index_led);
-			setTimer(2, 500);
-		}
-		if (check_button_pressed(0) == 1) {
-			status = MODE2;
-		}
-		break;
-
-	case AUTO_AMBER1_RED2:
-		traffic_light(AUTO_AMBER1_RED2);
-
-		if (timer_flag[0] == 1) {
-			status = AUTO_RED1_GREEN2;
-			setTimer(0, GREEN * 1000);
-		}
-		if (timer_flag[1] == 1) {
-			updateBufferMode1();
-			setTimer(1, 1000);
-		}
-		if (timer_flag[2] == 1) {
-			update7SEG(index_led);
-			setTimer(2, 500);
-		}
-		if (check_button_pressed(0) == 1) {
-			status = MODE2;
-		}
 		break;
 
 	default:
